@@ -8,7 +8,7 @@ const defaultOptions = {
   deserialize: JSON.parse,
 }
 
-const useLocalStorageState = (
+export const useLocalStorageState = (
   key,
   defaultValue = '',
   {serialize, deserialize} = defaultOptions,
