@@ -2,31 +2,52 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
-// 🐨 you'll want the following additional things from '../pokemon':
-// fetchPokemon: the function we call to get the pokemon info
-// PokemonInfoFallback: the thing we show while we're loading the pokemon info
-// PokemonDataView: the stuff we use to display the pokemon info
-import {PokemonForm} from '../pokemon'
+import {
+  PokemonForm,
+  fetchPokemon,
+  PokemonInfoFallback,
+  PokemonDataView,
+} from '../pokemon'
 
 function PokemonInfo({pokemonName}) {
-  // 🐨 Have state for the pokemon (null)
-  // 🐨 use React.useEffect where the callback should be called whenever the
-  // pokemon name changes.
-  // 💰 DON'T FORGET THE DEPENDENCIES ARRAY!
-  // 💰 if the pokemonName is falsy (an empty string) then don't bother making the request (exit early).
-  // 🐨 before calling `fetchPokemon`, clear the current pokemon state by setting it to null.
-  // (This is to enable the loading state when switching between different pokemon.)
-  // 💰 Use the `fetchPokemon` function to fetch a pokemon by its name:
-  //   fetchPokemon('Pikachu').then(
-  //     pokemonData => {/* update all the state here */},
-  //   )
-  // 🐨 return the following things based on the `pokemon` state and `pokemonName` prop:
-  //   1. no pokemonName: 'Submit a pokemon'
-  //   2. pokemonName but no pokemon: <PokemonInfoFallback name={pokemonName} />
-  //   3. pokemon: <PokemonDataView pokemon={pokemon} />
+  const [{status, pokemon, error}, setState] = React.useState({
+    status: 'idle',
+    pokemon: null,
+    error: null,
+  })
 
-  // 💣 remove this
-  return 'TODO'
+  React.useEffect(() => {
+    if (pokemonName) {
+      setState({status: 'pending'})
+      fetchPokemon(pokemonName).then(
+        pokemon =>
+          setState({
+            pokemon,
+            status: 'resolved',
+          }),
+        // NOTE: Using ".then" second argument instead of ".catch" will ONLY catch errors on the fetchPokemon call. This is useful when we don't want to catch other kind of errors. For example, when calling setPokemon (React handles their own errors, but we can catch them anyway)
+        error =>
+          setState({
+            error,
+            status: 'rejected',
+          }),
+      )
+    }
+  }, [pokemonName])
+
+  return (
+    <>
+      {status === 'idle' && 'Submit a pokemon'}
+      {status === 'pending' && <PokemonInfoFallback name={pokemonName} />}
+      {status === 'resolved' && <PokemonDataView pokemon={pokemon} />}
+      {status === 'rejected' && (
+        <div role="alert">
+          There was an error:{' '}
+          <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+        </div>
+      )}
+    </>
+  )
 }
 
 function App() {
